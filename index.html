@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7f4fa">
+<title>Organizasyon Defteri</title>
+<style>
+:root{color-scheme:light;--bg:#f7f4fa;--card:#ffffff;--ink:#3a3547;--mute:#8a8599;--line:#e9e3f1;--main:#8577b5;--onmain:#ffffff;--gold:#e3a86a;--red:#d9777a;--ok:#5fae88}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.4 "Avenir Next",Avenir,"Segoe UI",system-ui,sans-serif;padding-bottom:110px}
+header{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 10px;border-bottom:1px solid var(--line)}
+h1{font:700 22px Georgia,"Times New Roman",serif;margin:0 0 10px}
+.row{display:flex;gap:8px}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
+textarea{min-height:84px;resize:vertical}
+input,select,textarea{min-width:0;max-width:100%;-webkit-appearance:none;appearance:none}
+input[type=date]{display:block;min-height:48px;text-align:left}
+input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.4em}
+.two>div{min-width:0}
+form{overflow-x:hidden}
+.filters{display:flex;gap:8px;margin-top:8px}
+.filters select{flex:1;background-image:linear-gradient(45deg,transparent 50%,var(--mute) 50%),linear-gradient(135deg,var(--mute) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:32px}
+.bell{flex:0 0 auto;width:auto;padding:0 14px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font:inherit;font-size:14px}
+.bell.on{border-color:var(--ok);color:var(--ok)}
+.banner{background:#fff6ec;border:1px solid var(--gold);border-radius:14px;padding:12px;margin:8px 0}
+.banner b{display:block;margin-bottom:6px}
+.banner div{font-size:14px;padding:3px 0}
+.wa{display:inline-block;margin-left:6px;padding:2px 10px;border-radius:999px;background:#e6f6ee;color:#2f8a5e;text-decoration:none;font-size:13px;border:1px solid #bfe5d0}
+.wabtn{width:100%;margin-top:10px;padding:12px;border-radius:12px;border:1px solid #bfe5d0;background:#e6f6ee;color:#2f8a5e;font:inherit}
+.sw{position:relative;margin-bottom:10px;border-radius:14px;overflow:hidden}
+.acts{position:absolute;top:0;right:0;bottom:0;width:216px;display:flex}
+.acts button{flex:1;border:0;color:#fff;font:inherit;font-size:14px}
+.acts [data-a=edit]{background:#8577b5}.acts [data-a=done]{background:#5fae88}.acts [data-a=del]{background:#d9777a}
+.sw .card{position:relative;margin:0;transition:transform .2s;touch-action:pan-y;cursor:pointer;user-select:none;-webkit-user-select:none}
+.card.done .date,.card.done .info,.card.done .thumb{opacity:.55}.card.done strong{text-decoration:line-through}
+[hidden]{display:none!important}
+.nav,.rtabs{display:flex;gap:6px;margin:6px 0 4px}
+.nav button,.rtabs button{flex:1;padding:9px 2px;border:1px solid var(--line);background:transparent;color:var(--mute);border-radius:999px;font:inherit;font-size:14px}
+.nav button.on,.rtabs button.on{background:var(--main);color:var(--onmain);border-color:var(--main)}
+.rnav{display:flex;align-items:center;justify-content:space-between;margin:12px 0}
+.rnav button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:20px}
+.rnav b{font:700 17px Georgia,serif}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.stat small{color:var(--mute);display:block}
+.stat b{font-size:18px}
+.stat.big{grid-column:1/-1;background:#eef8f2;border-color:#cfe9db}
+.stat.big b{font:700 28px Georgia,serif;color:var(--ok)}
+.stat.big.neg{background:#fdf0f0;border-color:#f1cfcf}.stat.big.neg b{color:var(--red)}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:12px}
+.box h3{font:700 15px Georgia,serif;margin:0 0 8px}
+.chart{overflow-x:auto}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--mute);margin-top:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px}
+.rent{display:flex;gap:8px}.rent button{padding:0 16px;border-radius:10px;border:0;background:var(--main);color:var(--onmain);font:inherit}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:7px 4px;border-bottom:1px solid var(--line);text-align:right}td:first-child,th:first-child{text-align:left}
+.card.hasimg{overflow:hidden}
+.card.hasimg::before{content:"";position:absolute;inset:0;background:var(--img) center/cover no-repeat;opacity:.45;z-index:0}
+.card.hasimg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.93) 0%,rgba(255,255,255,.78) 50%,rgba(255,255,255,.35) 100%);z-index:0}
+.card.hasimg>*{position:relative;z-index:1}
+.card.hasimg .pill{background:#ffffffd9}
+.card.hasimg .info small,.card.hasimg .note,.card.hasimg .date span{color:#5d5870}
+.thumb{flex:0 0 64px;width:64px;height:64px;border-radius:12px;object-fit:cover;align-self:center}
+.tiles{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 6px}
+.tile{flex:0 0 92px;border:2px solid var(--line);border-radius:12px;background:var(--card);padding:0;overflow:hidden;font:inherit;color:var(--ink);text-align:center}
+.tile img,.tile .ph{width:100%;height:64px;object-fit:cover;display:block}
+.tile .ph,.ttile .ph{background:#efeaf7}
+.tile span{display:block;font-size:12px;padding:4px 2px}
+.tile.on{border-color:var(--main);box-shadow:0 0 0 2px #8577b533}
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.ttile{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer}
+.ttile img,.ttile .ph{width:100%;height:110px;object-fit:cover;display:block}
+.ttile b{display:block;padding:8px 10px}
+.prev{width:100%;max-height:200px;object-fit:cover;border-radius:12px;margin-top:10px}
+.xrow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
+.xrow button{border:0;background:transparent;color:var(--red);font-size:20px;padding:0 6px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.top h1{margin:0}
+.top .bell{height:36px}
+body.lock>header,body.lock>main,body.lock>.addcard{visibility:hidden}
+#login{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px}
+.lbox{width:100%;max-width:380px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px;box-shadow:0 10px 40px #8577b522}
+.lbox h2{font:700 26px Georgia,serif;margin:0 0 4px}
+.lbox p{color:var(--mute);margin:0 0 6px;font-size:14px}
+.lbox .go{width:100%;margin-top:16px;padding:14px;border:0;border-radius:12px;background:var(--main);color:var(--onmain);font:inherit;font-weight:700}
+.lbox .go:disabled{opacity:.6}
+.lbox .lnk{background:none;border:0;color:var(--main);font:inherit;font-size:14px;margin-top:10px;width:100%;padding:8px}
+#lerr{color:var(--red);font-size:14px;min-height:20px;margin-top:10px}
+.chk{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px;color:var(--mute)}.chk input{width:auto}
+.addcard{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 28px);margin:12px 14px 0;padding:11px;background:var(--card);border:1.5px dashed var(--main);border-radius:14px;color:var(--main);font:inherit;font-weight:700;font-size:15px}
+.addcard:active{background:#efeaf7}
+.dt{font:700 20px Georgia,serif;margin:0 0 2px;outline:none}
+.sum{margin:12px 4px 0;font-size:14px;color:var(--mute)}
+label{display:block;font-size:13px;color:var(--mute);margin:12px 0 4px}
+.tabs{display:flex;gap:6px;margin-top:10px}
+.tabs button{flex:1;padding:9px 2px;font-size:13px !important;border:1px solid var(--line);background:transparent;color:var(--mute);border-radius:999px;font:inherit;font-size:14px}
+.tabs button.on{background:var(--main);color:var(--onmain);border-color:var(--main)}
+main{padding:8px 14px}
+.month{font:700 15px Georgia,serif;color:var(--mute);margin:20px 4px 8px}
+.card{display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px;width:100%;text-align:left;font:inherit;color:inherit}
+.date{flex:0 0 58px;text-align:center;border-right:1px solid var(--line);padding-right:10px}
+.date b{display:block;font:700 28px/1 Georgia,serif}
+.date span{font-size:12px;color:var(--mute)}
+.info{flex:1;min-width:0}
+.info strong{display:block;font-size:17px}
+.info small{color:var(--mute)}
+.money{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;font-size:13px}
+.pill{padding:2px 8px;border-radius:999px;background:var(--bg);border:1px solid var(--line)}
+.pill.due{color:var(--red);border-color:var(--red)}
+.pill.paid{color:var(--ok);border-color:var(--ok)}
+.note{margin-top:6px;font-size:14px;color:var(--mute);white-space:pre-wrap}
+.today{border-color:var(--gold);box-shadow:inset 3px 0 0 var(--gold)}
+.warn{color:var(--red);font-size:13px;margin-top:6px}
+.empty{text-align:center;color:var(--mute);padding:60px 20px}
+dialog{border:0;padding:0;width:100%;max-width:520px;margin:auto auto 0;border-radius:20px 20px 0 0;background:var(--bg);color:var(--ink);max-height:94dvh}
+dialog::backdrop{background:#3a354755}
+form{padding:16px 16px calc(env(safe-area-inset-bottom,0px) + 16px)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btns{display:flex;gap:8px;margin-top:18px}
+.btns button{flex:1;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit}
+.btns .save{background:var(--main);color:var(--onmain);border-color:var(--main);font-weight:700;flex:2}
+.btns .del{color:var(--red)}
+.calc{margin-top:10px;font-size:14px;color:var(--mute)}
+#status{font-size:12px;color:var(--mute);margin-top:8px}
+</style>
+</head>
+<body>
+<div id="login" hidden>
+  <div class="lbox">
+    <h2>Organizasyon Defteri</h2>
+    <p id="lwait">Yükleniyor…</p>
+    <form id="lform" method="post" hidden>
+      <p>Devam etmek için giriş yapın.</p>
+      <label>E-posta</label><input id="lmail" type="email" autocomplete="username" inputmode="email" required>
+      <label>Şifre</label><input id="lpass" type="password" autocomplete="current-password" required>
+      <div id="lconfirm" hidden><label>Şifre (tekrar)</label><input id="lpass2" type="password" autocomplete="new-password"></div>
+      <label class="chk"><input type="checkbox" id="lrem" checked> Bu cihazda oturumu açık tut</label>
+      <div id="lerr" role="alert"></div>
+      <button class="go" id="lbtn" type="submit">Giriş yap</button>
+      <button class="lnk" id="lreset" type="button">Şifremi unuttum</button>
+      <button class="lnk" id="lmode" type="button">Hesabınız yok mu? Hesap oluşturun</button>
+    </form>
+    <button class="lnk" id="lskip" type="button" hidden>Şifresiz yerel modda devam et (veriler sadece bu telefonda kalır)</button>
+  </div>
+</div>
+<header>
+  <div class="top"><h1>Organizasyon Defteri</h1><button type="button" class="bell" id="logout" hidden>Çıkış</button></div>
+  <div class="nav"><button data-p="list" class="on">Kayıtlar</button><button data-p="rep">Rapor</button><button data-p="typ">Organizasyonlar</button></div>
+  <div id="listbar">
+  <input id="q" type="search" placeholder="Müşteri, organizasyon veya not ara">
+  <div class="tabs">
+    <button data-t="up" class="on">Yaklaşan</button>
+    <button data-t="past">Geçmiş</button>
+    <button data-t="done">Tamamlanan</button>
+    <button data-t="all">Tümü</button>
+  </div>
+  <div class="filters"><select id="mon"></select><button type="button" class="bell" id="bell">Bildirim aç</button></div>
+  </div>
+  <div id="status"></div>
+</header>
+<button class="addcard" id="add">+ Yeni kayıt</button>
+<main id="list"></main>
+<main id="rep" hidden></main>
+<main id="typ" hidden></main>
+
+<dialog id="tdlg">
+<form id="tform" method="dialog">
+  <h2 class="dt" id="ttitle" tabindex="-1" autofocus></h2>
+  <label>Organizasyon adı</label><input id="tname" required autocomplete="off" placeholder="Örn. Doğum günü, Kına, Nişan">
+  <label>Görsel</label><input id="tfile" type="file" accept="image/*">
+  <img id="tprev" class="prev" alt="" hidden>
+  <div class="btns"><button type="button" class="del" id="tdel">Sil</button><button type="button" id="tcancel">Vazgeç</button><button type="submit" class="save">Kaydet</button></div>
+</form>
+</dialog>
+
+<dialog id="dlg">
+<form id="f" method="dialog">
+  <h2 class="dt" id="dtitle" tabindex="-1" autofocus></h2>
+  <label>Tarih</label><input type="date" id="date" required>
+  <label>Müşteri adı</label><input id="cust" required autocomplete="off">
+  <label>Telefon</label><input id="tel" type="tel">
+  <label>Organizasyon</label>
+  <div class="tiles" id="tiles"></div><div class="calc" id="tsel" style="margin:0"></div>
+  <div class="two">
+    <div><label>Toplam fiyat (₺)</label><input id="price" type="number" inputmode="decimal" min="0"></div>
+    <div><label>Alınan kapora (₺)</label><input id="dep" type="number" inputmode="decimal" min="0"></div>
+  </div>
+  <label>Maliyet / gider (₺)</label><input id="cost" type="number" inputmode="decimal" min="0" placeholder="Bu organizasyon için yapılan masraf">
+  <label>Konum</label><input id="loc" placeholder="Salon adı veya adres">
+  <div class="calc" id="calc"></div>
+  <button type="button" class="wabtn" id="dn" style="background:#eef0fb;border-color:#d5d0ec;color:#6a5aa5">Tamamlandı olarak işaretle</button>
+  <button type="button" class="wabtn" id="wa">WhatsApp ile müşteriye mesaj yaz</button>
+  <label>Hatırlatma</label>
+  <select id="rem"><option value="0">Hatırlatma yok</option><option value="1">1 gün önce</option><option value="3">3 gün önce</option><option value="7" selected>7 gün önce</option><option value="14">14 gün önce</option></select>
+  <label>İstekler ve notlar</label><textarea id="note"></textarea>
+  <div class="btns">
+    <button type="button" class="del" id="del">Sil</button>
+    <button type="button" id="cancel">Vazgeç</button>
+    <button type="submit" class="save">Kaydet</button>
+  </div>
+</form>
+</dialog>
+
+<script type="module">
+/* ====== FIREBASE AYARLARI ======
+   Firebase Console > Proje ayarları > Web uygulaması bölümündeki config'i buraya yapıştırın.
+   Boş bırakırsanız uygulama, bu cihazın hafızasında (localStorage) çalışır. */
+const firebaseConfig = {
+  apiKey: "AIzaSyCFvDDpLxfD4qTr2A9dcsSykfKRLmPvVts",
+  authDomain: "lotus-1d14d.firebaseapp.com",
+  projectId: "lotus-1d14d",
+  storageBucket: "lotus-1d14d.firebasestorage.app",
+  messagingSenderId: "341105112395",
+  appId: "1:341105112395:web:1cc5e98d5ead21edbb24ce"
+};
+const COL = "organizasyonlar";
+
+const $ = id => document.getElementById(id);
+let items = [], tab = "up", mon = "all", rent = 0, types = [], exps = [], rp = "month", ref = new Date(), page = "list", editing = null, db = null, fs = null, fa = null, auth = null;
+const fmt = n => (Number(n)||0).toLocaleString("tr-TR") + " ₺";
+const today = () => new Date().toISOString().slice(0,10);
+
+/* ---- Depolama: Firestore veya localStorage ---- */
+const store = {
+  async init(){
+    if(!firebaseConfig.projectId){ this.noCfg("Firebase ayarı girilmemiş. Dosyadaki firebaseConfig bölümünü doldurmadan giriş ekranı çalışmaz."); return; }
+    try{
+      const base = "https://www.gstatic.com/firebasejs/10.14.1/";
+      const app = await import(base+"firebase-app.js");
+      fs = await import(base+"firebase-firestore.js");
+      fa = await import(base+"firebase-auth.js");
+      const a = app.initializeApp(firebaseConfig);
+      db = fs.initializeFirestore(a, {localCache: fs.persistentLocalCache()});
+      auth = fa.getAuth(a);
+    }catch(e){ db = null; this.noCfg("Firebase yüklenemedi: " + (e.message||e) + ". İnternetinizi kontrol edip sayfayı yenileyin."); return; }
+    document.body.classList.add("lock"); $("login").hidden = false;
+    fa.onAuthStateChanged(auth, u => {
+      if(u){ $("login").hidden = true; document.body.classList.remove("lock"); $("logout").hidden = false; this.listen(); }
+      else { this.unlisten(); $("logout").hidden = true; $("login").hidden = false; document.body.classList.add("lock"); $("lwait").hidden = true; $("lform").hidden = false; $("lerr").textContent = sessionStorage.getItem("lmsg")||""; sessionStorage.removeItem("lmsg"); }
+    });
+  },
+  noCfg(msg){
+    document.body.classList.add("lock"); $("login").hidden = false; $("lform").hidden = true;
+    $("lwait").hidden = false; $("lwait").textContent = msg; $("lskip").hidden = false;
+  },
+  subs: [],
+  P(...a){ return ["users", auth.currentUser.uid, ...a]; },
+  listen(){
+    this.unlisten(); const u = this.subs;
+    const err = e => { $("status").textContent = "Firebase hatası: " + e.code; };
+    u.push(fs.onSnapshot(fs.doc(db,...store.P("ayarlar","genel")), d => { rent = +(d.data()?.rent)||0; renderReport(); }, err));
+    for(const [c,set] of [["turler",v => types = v],["giderler",v => exps = v]])
+      u.push(fs.onSnapshot(fs.collection(db,...store.P(c)), q => { set(q.docs.map(d => ({id:d.id, ...d.data()}))); render(); }, err));
+    u.push(fs.onSnapshot(fs.collection(db,...store.P(COL)), q => {
+      items = q.docs.map(d => ({id:d.id, ...d.data()}));
+      $("status").textContent = q.metadata.fromCache ? "Çevrimdışı önbellek" : "Firebase ile senkron";
+      render();
+    }, err));
+  },
+  unlisten(){ this.subs.forEach(f => f()); this.subs = []; items = []; types = []; exps = []; rent = 0; render(); },
+  local(){ try{ items = JSON.parse(localStorage.getItem(COL)||"[]"); }catch{ items=[]; } try{ rent = +localStorage.getItem("rent")||0; types = JSON.parse(localStorage.getItem("turler")||"[]"); exps = JSON.parse(localStorage.getItem("giderler")||"[]"); }catch{} render(); },
+  persist(){ try{ localStorage.setItem(COL, JSON.stringify(items)); }catch{} },
+  async put(c,o){
+    const arr = c==="turler" ? types : exps;
+    if(db){ const {id,...d} = o; if(id) await fs.setDoc(fs.doc(db,...store.P(c,id)), d); else await fs.addDoc(fs.collection(db,...store.P(c)), d); return; }
+    if(o.id){ const i = arr.findIndex(x => x.id===o.id); if(i>=0) arr[i] = o; } else arr.push({...o, id:crypto.randomUUID()});
+    try{ localStorage.setItem(c, JSON.stringify(arr)); }catch{ alert("Cihaz hafızası doldu"); } render();
+  },
+  async del(c,id){
+    const arr = c==="turler" ? types : exps;
+    if(db){ await fs.deleteDoc(fs.doc(db,...store.P(c,id))); return; }
+    const i = arr.findIndex(x => x.id===id); if(i>=0) arr.splice(i,1);
+    try{ localStorage.setItem(c, JSON.stringify(arr)); }catch{} render();
+  },
+  async setRent(v){ rent = v; if(db) await fs.setDoc(fs.doc(db,...store.P("ayarlar","genel")), {rent:v}); else { try{ localStorage.setItem("rent", v); }catch{} } renderReport(); },
+  async save(o){
+    if(db){
+      const {id, ...data} = o;
+      if(id) await fs.setDoc(fs.doc(db,...store.P(COL, id)), data); else await fs.addDoc(fs.collection(db,...store.P(COL)), data);
+    } else {
+      if(o.id) items = items.map(x => x.id===o.id ? o : x); else items.push({...o, id: crypto.randomUUID()});
+      this.persist(); render();
+    }
+  },
+  async remove(id){
+    if(db) await fs.deleteDoc(fs.doc(db,...store.P(COL, id)));
+    else { items = items.filter(x => x.id!==id); this.persist(); render(); }
+  }
+};
+
+/* ---- Liste ---- */
+function render(){ renderReport(); renderTypes(); renderTiles();
+  const q = $("q").value.trim().toLocaleLowerCase("tr");
+  const t = today();
+  let list = items.filter(x => !q || [x.cust,x.type,x.note,x.tel,x.loc].join(" ").toLocaleLowerCase("tr").includes(q));
+  if(tab==="done") list = list.filter(x => x.done);
+  else if(tab!=="all") list = list.filter(x => !x.done && (tab==="up" ? x.date >= t : x.date < t));
+  fillMonths(); notify();
+  if(mon!=="all") list = list.filter(x => x.date.slice(0,7)===mon);
+  list.sort((a,b) => tab==="past"||tab==="done" ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date));
+  const dup = {}; items.filter(x => !x.done).forEach(x => dup[x.date] = (dup[x.date]||0)+1);
+  const pre = banner() + summary(list);
+  if(!list.length){ $("list").innerHTML = pre + `<div class="empty">${q?"Aramaya uyan kayıt yok.":"Henüz kayıt yok. “Yeni kayıt” ile ilk rezervasyonu ekleyin."}</div>`; return; }
+  let html = pre, last = "";
+  for(const x of list){
+    const d = new Date(x.date+"T00:00:00");
+    const m = d.toLocaleDateString("tr-TR",{month:"long",year:"numeric"});
+    if(m!==last){ html += `<div class="month">${m}</div>`; last = m; }
+    const rest = x.done ? 0 : (+x.price||0) - (+x.dep||0);
+    html += `<div class="sw" data-id="${x.id}"><div class="acts"><button data-a="edit">Düzenle</button><button data-a="done">${x.done?"Geri al":"Tamamla"}</button><button data-a="del">Sil</button></div>
+    <div class="card ${x.date===t?"today":""} ${x.done?"done":""} ${typeImg(x)?"hasimg":""}"${typeImg(x)?` style="--img:url('${typeImg(x)}')"`:""}>
+      <div class="date"><b>${d.getDate()}</b><span>${d.toLocaleDateString("tr-TR",{weekday:"short"})}</span></div>
+      <div class="info"><strong>${esc(x.cust)}</strong><small>${esc(x.type||"Organizasyon")}${x.tel?" • "+esc(x.tel):""}</small>${x.loc?`<small style="display:block">Konum: ${esc(x.loc)}</small>`:""}
+      <div class="money"><span class="pill">Fiyat ${fmt(x.price)}</span><span class="pill">Kapora ${fmt(x.dep)}</span>${+x.cost?`<span class="pill">Maliyet ${fmt(x.cost)}</span>`:""}
+      <span class="pill ${rest>0?"due":"paid"}">${rest>0?"Kalan "+fmt(rest):"Ödendi"}</span></div>
+      ${x.note?`<div class="note">${esc(x.note)}</div>`:""}
+      ${dup[x.date]>1&&!x.done?`<div class="warn">Bu tarihte ${dup[x.date]} kayıt var</div>`:""}</div></div></div>`;
+  }
+  $("list").innerHTML = html;
+}
+function monthName(k){ return new Date(k+"-01T00:00:00").toLocaleDateString("tr-TR",{month:"long",year:"numeric"}); }
+function fillMonths(){
+  const keys = [...new Set(items.map(x => x.date.slice(0,7)))].sort();
+  if(mon!=="all" && !keys.includes(mon)) keys.push(mon), keys.sort();
+  $("mon").innerHTML = `<option value="all">Tüm aylar</option>` + keys.map(k => `<option value="${k}"${k===mon?" selected":""}>${monthName(k)}</option>`).join("");
+}
+function summary(list){
+  if(mon==="all" || !list.length) return "";
+  const p = list.reduce((a,x)=>a+(+x.price||0),0), d = list.reduce((a,x)=>a+(+x.dep||0),0);
+  return `<div class="sum">${list.length} kayıt • Toplam ${fmt(p)} • Kapora ${fmt(d)} • Kalan ${fmt(p-d)}</div>`;
+}
+/* ---- Hatırlatmalar ---- */
+function due(){
+  const t = new Date(today()+"T00:00:00");
+  return items.filter(x => !x.done).map(x => ({x, left: Math.round((new Date(x.date+"T00:00:00")-t)/864e5)}))
+    .filter(o => +o.x.rem>0 && o.left>=0 && o.left<=+o.x.rem).sort((a,b)=>a.left-b.left);
+}
+function waLink(x){
+  let n = String(x.tel||"").replace(/\D/g,""); if(!n) return "";
+  if(n.startsWith("00")) n = n.slice(2); else if(n.startsWith("0")) n = "90"+n.slice(1); else if(n.length===10) n = "90"+n;
+  const d = new Date(x.date+"T00:00:00").toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric",weekday:"long"});
+  const rest = (+x.price||0)-(+x.dep||0);
+  const msg = `Merhaba ${x.cust}, ${d} tarihli ${x.type||"organizasyonunuz"} için hatırlatma yapmak istedik.` + (rest>0 ? ` Kalan ödeme tutarı ${fmt(rest)}.` : ` Ödemeniz tamamlanmıştır.`) + ` Görüşmek üzere.`;
+  return "https://wa.me/"+n+"?text="+encodeURIComponent(msg);
+}
+const whenTxt = n => n===0 ? "Bugün" : n===1 ? "Yarın" : n+" gün sonra";
+function banner(){
+  const d = due(); if(!d.length) return "";
+  return `<div class="banner"><b>Hatırlatmalar</b>` + d.map(({x,left}) => {
+    const rest = (+x.price||0)-(+x.dep||0);
+    return `<div>${whenTxt(left)}: ${esc(x.cust)} (${esc(x.type||"Organizasyon")})${rest>0?" – kalan "+fmt(rest):""}${waLink(x)?`<a class="wa" target="_blank" rel="noopener" href="${waLink(x)}">WhatsApp</a>`:""}</div>`;
+  }).join("") + `</div>`;
+}
+function notify(){
+  if(!("Notification" in window) || Notification.permission!=="granted") return;
+  const h = new Date().getHours();
+  const slot = h>=21 ? "21" : h>=9 ? "09" : "";
+  if(!slot) return;
+  for(const {x,left} of due()){
+    const k = "n:"+x.id+":"+today()+":"+slot;
+    try{
+      if(localStorage.getItem(k)) continue;
+      const rest = (+x.price||0)-(+x.dep||0);
+      new Notification(whenTxt(left)+": "+x.cust, {body:(x.type||"Organizasyon")+(rest>0?" – kalan "+fmt(rest):""), tag:k});
+      localStorage.setItem(k,"1");
+    }catch{}
+  }
+}
+function bellState(){
+  const ok = "Notification" in window && Notification.permission==="granted";
+  $("bell").textContent = ok ? "Bildirim açık" : "Bildirim aç";
+  $("bell").classList.toggle("on", ok);
+}
+$("bell").onclick = async () => {
+  if(!("Notification" in window)){ alert("Bu tarayıcı bildirimi desteklemiyor. iPhone'da önce Safari'de Paylaş > Ana Ekrana Ekle yapın."); return; }
+  await Notification.requestPermission(); bellState(); notify();
+};
+$("mon").onchange = e => { mon = e.target.value; render(); };
+document.addEventListener("visibilitychange", () => { if(!document.hidden) notify(); });
+setInterval(notify, 300000); bellState();
+const esc = s => String(s??"").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---- Form ---- */
+function calc(){
+  const r = (+$("price").value||0) - (+$("dep").value||0);
+  const k = (+$("price").value||0) - (+$("cost").value||0);
+  $("calc").textContent = $("price").value ? (r>0 ? "Kalan ödeme: "+fmt(r) : "Tamamı ödendi") + ($("cost").value ? " • Kâr: "+fmt(k) : "") : "";
+}
+function open_(o){
+  editing = o||null;
+  $("date").value = o?.date || today(); $("cust").value = o?.cust||""; $("tel").value = o?.tel||"";
+  curType = o ? {id:o.typeId||types.find(t => t.name===o.type)?.id||"", name:o.type||""} : {id:"",name:""}; renderTiles(); $("rem").value = o?.rem??"7"; $("cost").value = o?.cost??""; $("loc").value = o?.loc||""; $("price").value = o?.price??""; $("dep").value = o?.dep??""; $("note").value = o?.note||"";
+  $("del").style.display = o ? "" : "none"; $("wa").style.display = o && o.tel ? "" : "none"; $("dn").style.display = o ? "" : "none"; $("dn").textContent = o?.done ? "Tamamlandıyı geri al" : "Tamamlandı olarak işaretle"; calc(); $("dtitle").textContent = o ? "Kaydı düzenle" : "Yeni kayıt"; $("dlg").showModal(); if(document.activeElement && ["date","text","tel","number"].includes(document.activeElement.type)) document.activeElement.blur();
+}
+$("add").onclick = () => open_();
+$("wa").onclick = () => { if(editing) window.open(waLink(editing),"_blank"); };
+$("dn").onclick = async () => { if(editing){ const x = editing; $("dlg").close(); await store.save({...x, done:!x.done}); } };
+$("cancel").onclick = () => $("dlg").close();
+$("price").oninput = $("dep").oninput = $("cost").oninput = calc;
+const W = 216; let sw = null, skip = false;
+$("list").onclick = async e => {
+  if(skip) return;
+  const b = e.target.closest(".acts button");
+  if(b){
+    const x = items.find(i => i.id===b.closest(".sw").dataset.id); if(!x) return;
+    if(b.dataset.a==="edit") open_(x);
+    else if(b.dataset.a==="done") await store.save({...x, done:!x.done});
+    else if(confirm(x.cust+" kaydı silinsin mi?")) await store.remove(x.id);
+    return;
+  }
+  const c = e.target.closest(".card"); if(!c) return;
+  if(c.style.transform){ c.style.transform = ""; return; }
+  open_(items.find(x => x.id===c.closest(".sw").dataset.id));
+};
+$("list").addEventListener("touchstart", e => {
+  const c = e.target.closest(".card");
+  document.querySelectorAll(".card").forEach(k => { if(k!==c) k.style.transform = ""; });
+  if(!c) return; const t = e.touches[0];
+  sw = {c, x:t.clientX, y:t.clientY, base:c.style.transform ? -W : 0, dir:null, moved:false};
+  c.style.transition = "none";
+}, {passive:true});
+$("list").addEventListener("touchmove", e => {
+  if(!sw) return; const t = e.touches[0], dx = t.clientX-sw.x, dy = t.clientY-sw.y;
+  if(!sw.dir){ if(Math.abs(dx)<8 && Math.abs(dy)<8) return; sw.dir = Math.abs(dx)>Math.abs(dy) ? "h" : "v"; }
+  if(sw.dir!=="h") return;
+  e.preventDefault(); sw.moved = true; sw.v = Math.max(-W, Math.min(0, sw.base+dx));
+  sw.c.style.transform = `translateX(${sw.v}px)`;
+}, {passive:false});
+$("list").addEventListener("touchend", () => {
+  if(!sw) return; sw.c.style.transition = "";
+  if(sw.moved){ sw.c.style.transform = sw.v < -W/2 ? `translateX(${-W}px)` : ""; skip = true; setTimeout(() => skip = false, 350); }
+  sw = null;
+});
+$("q").oninput = render;
+document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
+  tab = b.dataset.t; document.querySelectorAll(".tabs button").forEach(x => x.classList.toggle("on", x===b)); render();
+});
+$("f").onsubmit = async e => {
+  e.preventDefault();
+  const o = {date:$("date").value, cust:$("cust").value.trim(), tel:$("tel").value.trim(), type:curType.name, typeId:curType.id,
+    rem:+$("rem").value, cost:+$("cost").value||0, loc:$("loc").value.trim(), price:+$("price").value||0, dep:+$("dep").value||0, note:$("note").value.trim()};
+  if(editing) o.id = editing.id;
+  $("dlg").close();
+  try{ await store.save(o); }catch(err){ alert("Kaydedilemedi: "+err.message); }
+};
+$("del").onclick = async () => {
+  if(editing && confirm(editing.cust+" kaydı silinsin mi?")){ $("dlg").close(); await store.remove(editing.id); }
+};
+/* ---- Sayfa geçişi ---- */
+document.querySelectorAll(".nav button").forEach(b => b.onclick = () => {
+  page = b.dataset.p;
+  document.querySelectorAll(".nav button").forEach(x => x.classList.toggle("on", x===b));
+  $("list").hidden = $("listbar").hidden = $("add").hidden = page!=="list";
+  $("rep").hidden = page!=="rep"; $("typ").hidden = page!=="typ";
+  renderReport(); renderTypes(); window.scrollTo(0,0);
+});
+
+/* ---- Rapor ---- */
+const iso = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const MS = ["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"];
+function mkeys(a,b){ const o=[]; let [y,m]=a.split("-").map(Number); for(;;){ const k=y+"-"+String(m).padStart(2,"0"); if(k>b) break; o.push(k); if(++m>12){ m=1; y++; } } return o; }
+function range(){
+  const y = ref.getFullYear(), m = ref.getMonth();
+  if(rp==="week"){
+    const d = new Date(ref); d.setDate(d.getDate() - (d.getDay()+6)%7); const e = new Date(d); e.setDate(e.getDate()+6);
+    return {s:iso(d), e:iso(e), label:d.toLocaleDateString("tr-TR",{day:"numeric",month:"short"})+" – "+e.toLocaleDateString("tr-TR",{day:"numeric",month:"short",year:"numeric"})};
+  }
+  if(rp==="month"){ const a = iso(new Date(y,m,1)); return {s:a, e:iso(new Date(y,m+1,0)), label:monthName(a.slice(0,7))}; }
+  if(rp==="year") return {s:y+"-01-01", e:y+"-12-31", label:String(y)};
+  return {s:"0000-01-01", e:"9999-12-31", label:"Tüm zamanlar"};
+}
+function chartSvg(data){
+  if(!data.length) return "";
+  const W = 44, PH = 140, top = 14;
+  const max = Math.max(1, ...data.map(d => d.c), ...data.map(d => d.n)), min = Math.min(0, ...data.map(d => d.n));
+  const y = v => top + (max-v)/(max-min)*PH, y0 = y(0);
+  let g = "";
+  data.forEach((d,i) => {
+    const [yy,mm] = d.k.split("-").map(Number), x = i*W;
+    const bar = (v,off,col) => { const yv = y(v); return `<rect x="${x+off}" y="${Math.min(yv,y0)}" width="16" height="${Math.max(1,Math.abs(yv-y0))}" rx="3" fill="${col}"/>`; };
+    g += bar(d.c,5,"#b9aedc") + bar(d.n,23,d.n>=0?"#5fae88":"#d9777a");
+    g += `<text x="${x+W/2}" y="${top+PH+22}" text-anchor="middle" font-size="11" style="fill:var(--mute)">${MS[mm-1]}${data.length>12?" "+String(yy).slice(2):""}</text>`;
+  });
+  return `<div class="chart"><svg viewBox="0 0 ${data.length*W} ${top+PH+30}" style="min-width:${data.length*W}px;width:100%;height:auto"><line x1="0" x2="${data.length*W}" y1="${y0}" y2="${y0}" style="stroke:var(--line)"/>${g}</svg></div>
+  <div class="legend"><span><i style="background:#b9aedc"></i>Ciro</span><span><i style="background:#5fae88"></i>Net kazanç</span><span><i style="background:#d9777a"></i>Zarar</span></div>`;
+}
+function renderReport(){
+  const ae = document.activeElement;
+  if($("rep").hidden || (ae && ae.tagName==="INPUT" && $("rep").contains(ae))) return;
+  const t = today(), R = range(), mk = x => x.date.slice(0,7), y = ref.getFullYear();
+  const real = items.filter(x => x.done || x.date<=t);
+  const firstM = items.length ? items.map(mk).sort()[0] : t.slice(0,7);
+  const lastM = [t.slice(0,7), ...real.map(mk)].sort().pop();
+  const act = k => k>=firstM && k<=lastM;
+  const inR = x => x.date>=R.s && x.date<=R.e;
+  const sum = (a,f) => a.reduce((n,x) => n+(+x[f]||0), 0);
+  const L = real.filter(inR), E = exps.filter(inR).sort((a,b) => b.date.localeCompare(a.date));
+  let months;
+  if(rp==="all") months = firstM<=lastM ? mkeys(firstM,lastM) : [];
+  else if(rp==="year") months = mkeys(y+"-01", y+"-12");
+  else months = [R.s.slice(0,7)];
+  const rentTotal = rp==="week" ? (act(R.s.slice(0,7)) ? rent*12/52 : 0) : months.filter(act).length*rent;
+  const ciro = sum(L,"price"), cost = sum(L,"cost"), other = sum(E,"amt");
+  const kasa = L.reduce((n,x) => n + (x.done ? (+x.price||0) : (+x.dep||0)), 0);
+  const net = ciro-cost-rentTotal-other;
+  const fut = sum(items.filter(x => !x.done && x.date>t && inR(x)), "price");
+  const ck = rp==="all" ? months : mkeys(y+"-01", y+"-12");
+  const data = ck.map(k => { const a = real.filter(x => mk(x)===k); const c = sum(a,"price"), xx = sum(exps.filter(e => e.date.slice(0,7)===k),"amt"); return {k, c, x:xx, n:c-sum(a,"cost")-(act(k)?rent:0)-xx}; });
+  const rows = data.filter(d => d.c>0 || d.x>0 || (act(d.k) && rent>0));
+  const by = {}; L.forEach(x => { const k = x.type||"Diğer"; (by[k] ??= {n:0,c:0}).n++; by[k].c += +x.price||0; });
+  const P = [["week","Haftalık"],["month","Aylık"],["year","Yıllık"],["all","Tümü"]];
+  $("rep").innerHTML = `
+    <div class="rtabs">${P.map(([k,n]) => `<button data-r="${k}" class="${rp===k?"on":""}">${n}</button>`).join("")}</div>
+    ${rp==="all" ? `<div class="rnav"><b>${R.label}</b></div>` : `<div class="rnav"><button data-n="-1">‹</button><b>${R.label}</b><button data-n="1">›</button></div>`}
+    <div class="grid">
+      <div class="stat big ${net<0?"neg":""}"><small>Net kazanç</small><b>${fmt(Math.round(net))}</b></div>
+      <div class="stat"><small>Yapılan organizasyon</small><b>${L.length}</b></div>
+      <div class="stat"><small>Ciro</small><b>${fmt(ciro)}</b></div>
+      <div class="stat"><small>Kasaya giren</small><b>${fmt(kasa)}</b></div>
+      <div class="stat"><small>Kalan alacak</small><b>${fmt(ciro-kasa)}</b></div>
+      <div class="stat"><small>Organizasyon maliyeti</small><b>${fmt(cost)}</b></div>
+      <div class="stat"><small>Dükkan kirası</small><b>${fmt(Math.round(rentTotal))}</b></div>
+      <div class="stat"><small>Diğer giderler</small><b>${fmt(other)}</b></div>
+      ${fut>0 ? `<div class="stat" style="grid-column:1/-1"><small>Gelecek rezervasyonlar (hesaba dahil değil)</small><b>${fmt(fut)}</b></div>` : ""}
+    </div>
+    <div class="box"><h3>${rp==="all" ? "Aylık kazanç" : y+" aylık kazanç"}</h3>${chartSvg(data) || '<div class="empty" style="padding:20px">Henüz veri yok</div>'}</div>
+    ${Object.keys(by).length ? `<div class="box"><h3>Organizasyon türlerine göre</h3><table><tr><th>Tür</th><th>Adet</th><th>Ciro</th></tr>${Object.entries(by).sort((a,b) => b[1].n-a[1].n).map(([k,v]) => `<tr><td>${esc(k)}</td><td>${v.n}</td><td>${fmt(v.c)}</td></tr>`).join("")}</table></div>` : ""}
+    <div class="box"><h3>Diğer giderler</h3>
+      <label style="margin-top:0">Açıklama</label><input id="expName" placeholder="Fatura, maaş, malzeme...">
+      <div class="two"><div><label>Tutar (₺)</label><input id="expAmt" type="number" inputmode="decimal" min="0"></div><div><label>Tarih</label><input id="expDate" type="date" value="${t}"></div></div>
+      <button class="wabtn" id="expAdd" style="background:#8577b5;color:#fff;border:0">Gider ekle</button>
+      ${E.length ? `<div style="margin-top:10px">${E.map(e => `<div class="xrow"><span>${new Date(e.date+"T00:00:00").toLocaleDateString("tr-TR",{day:"numeric",month:"short"})} • ${esc(e.name)}</span><span>${fmt(e.amt)}<button data-xdel="${e.id}">×</button></span></div>`).join("")}</div>` : `<div class="calc">Bu dönemde gider yok.</div>`}
+    </div>
+    <div class="box"><h3>Aylık dükkan kirası</h3>
+      <div class="rent"><input id="rent" type="number" inputmode="decimal" min="0" placeholder="Örn. 15000" value="${rent||""}"><button id="rentSave">Kaydet</button></div>
+      <div class="calc">İlk kayıt ayından itibaren her ay için gider olarak düşülür.</div></div>
+    ${rows.length ? `<div class="box"><h3>Aylık döküm</h3><table><tr><th>Ay</th><th>Ciro</th><th>Net</th></tr>${rows.map(d => `<tr><td>${monthName(d.k)}</td><td>${fmt(d.c)}</td><td style="color:${d.n<0?"var(--red)":"var(--ok)"}">${fmt(Math.round(d.n))}</td></tr>`).join("")}</table></div>` : ""}
+    <div class="calc" style="margin:12px 4px">Rapora tarihi geçmiş veya tamamlandı işaretli kayıtlar dahildir. Tamamlanan kaydın tüm tutarı kasaya girmiş sayılır. Net kazanç = ciro − maliyet − kira − diğer giderler.</div>`;
+}
+$("rep").onclick = async e => {
+  const b = e.target.closest("button"); if(!b) return;
+  if(b.dataset.r){ rp = b.dataset.r; renderReport(); }
+  else if(b.dataset.n){
+    const n = +b.dataset.n;
+    if(rp==="week") ref.setDate(ref.getDate()+7*n);
+    else if(rp==="month"){ ref.setDate(1); ref.setMonth(ref.getMonth()+n); }
+    else ref.setFullYear(ref.getFullYear()+n);
+    renderReport();
+  } else if(b.id==="rentSave"){ const v = +$("rent").value||0; $("rent").blur(); store.setRent(v); }
+  else if(b.id==="expAdd"){
+    const name = $("expName").value.trim(), amt = +$("expAmt").value||0, date = $("expDate").value;
+    if(!name || amt<=0 || !date){ alert("Açıklama, tutar ve tarih girin."); return; }
+    document.activeElement.blur(); await store.put("giderler", {name, amt, date});
+  } else if(b.dataset.xdel){ if(confirm("Bu gider silinsin mi?")) await store.del("giderler", b.dataset.xdel); }
+};
+
+/* ---- Organizasyon türleri (görselli) ---- */
+const sortedTypes = () => [...types].sort((a,b) => a.name.localeCompare(b.name,"tr"));
+function typeImg(x){ return (types.find(t => t.id===x.typeId) || types.find(t => t.name===x.type))?.img || ""; }
+let curType = {id:"",name:""}, tEdit = null, tImg = "";
+function renderTiles(){
+  $("tiles").innerHTML = types.length
+    ? sortedTypes().map(t => `<button type="button" class="tile ${t.id===curType.id?"on":""}" data-id="${t.id}">${t.img?`<img src="${t.img}" alt="">`:`<div class="ph"></div>`}<span>${esc(t.name)}</span></button>`).join("")
+    : `<div class="calc">Önce “Organizasyonlar” sayfasından organizasyon ekleyin.</div>`;
+  $("tsel").textContent = curType.name ? "Seçili: "+curType.name : "";
+}
+$("tiles").onclick = e => {
+  const b = e.target.closest(".tile"); if(!b) return;
+  const t = types.find(x => x.id===b.dataset.id);
+  curType = curType.id===t.id ? {id:"",name:""} : {id:t.id, name:t.name}; renderTiles();
+};
+function renderTypes(){
+  if($("typ").hidden) return;
+  $("typ").innerHTML = `<button class="wabtn" id="tNew" style="background:#8577b5;color:#fff;border:0;margin-top:8px">+ Yeni organizasyon ekle</button>` +
+    (types.length ? `<div class="tgrid">${sortedTypes().map(t => `<div class="ttile" data-id="${t.id}">${t.img?`<img src="${t.img}" alt="">`:`<div class="ph"></div>`}<b>${esc(t.name)}</b></div>`).join("")}</div>`
+      : `<div class="empty">Henüz organizasyon yok. Verdiğiniz organizasyonları görseliyle ekleyin, kayıt açarken buradan seçin.</div>`);
+}
+function shrink(file, max=480){
+  return new Promise((res,rej) => {
+    const img = new Image(), u = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, max/Math.max(img.width,img.height)), c = document.createElement("canvas");
+      c.width = Math.round(img.width*k); c.height = Math.round(img.height*k);
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(u); res(c.toDataURL("image/jpeg",.75));
+    };
+    img.onerror = rej; img.src = u;
+  });
+}
+function openType(t){
+  tEdit = t||null; tImg = t?.img||""; $("tname").value = t?.name||""; $("tfile").value = "";
+  $("tprev").src = tImg; $("tprev").hidden = !tImg; $("tdel").style.display = t ? "" : "none"; $("ttitle").textContent = t ? "Organizasyonu düzenle" : "Yeni organizasyon"; $("tdlg").showModal();
+}
+$("typ").onclick = e => {
+  if(e.target.closest("#tNew")) return openType();
+  const c = e.target.closest(".ttile"); if(c) openType(types.find(t => t.id===c.dataset.id));
+};
+$("tfile").onchange = async e => {
+  const f = e.target.files[0]; if(!f) return;
+  try{ tImg = await shrink(f); $("tprev").src = tImg; $("tprev").hidden = false; }catch{ alert("Görsel okunamadı"); }
+};
+$("tcancel").onclick = () => $("tdlg").close();
+$("tform").onsubmit = async e => {
+  e.preventDefault(); const name = $("tname").value.trim(); if(!name) return;
+  $("tdlg").close(); const o = {name, img:tImg}; if(tEdit) o.id = tEdit.id;
+  try{ await store.put("turler", o); }catch(err){ alert("Kaydedilemedi: "+err.message); }
+};
+$("tdel").onclick = async () => { if(tEdit && confirm(tEdit.name+" silinsin mi?")){ $("tdlg").close(); await store.del("turler", tEdit.id); } };
+/* ---- Giriş ---- */
+const authMsg = c => ({
+  "auth/invalid-credential":"E-posta veya şifre hatalı.", "auth/wrong-password":"E-posta veya şifre hatalı.", "auth/user-not-found":"E-posta veya şifre hatalı.",
+  "auth/invalid-email":"E-posta adresi geçersiz.", "auth/too-many-requests":"Çok fazla deneme yapıldı. Biraz bekleyip tekrar deneyin.",
+  "auth/network-request-failed":"İnternet bağlantısı yok.", "auth/user-disabled":"Bu hesap devre dışı.", "auth/email-already-in-use":"Bu e-posta ile zaten hesap var. Giriş yapın.", "auth/weak-password":"Şifre çok zayıf.", "auth/operation-not-allowed":"Hesap oluşturma Firebase'de kapalı.", "short":"Şifre en az 8 karakter olmalı.", "mismatch":"Şifreler aynı değil."
+}[c] || "Giriş yapılamadı ("+c+").");
+let signup = false;
+function setMode(v){
+  signup = v; $("lconfirm").hidden = !v; $("lreset").hidden = v; $("lerr").textContent = "";
+  $("lbtn").textContent = v ? "Hesap oluştur" : "Giriş yap";
+  $("lmode").textContent = v ? "Zaten hesabınız var mı? Giriş yapın" : "Hesabınız yok mu? Hesap oluşturun";
+  $("lpass").autocomplete = v ? "new-password" : "current-password";
+}
+$("lmode").onclick = () => setMode(!signup);
+$("lskip").onclick = () => { $("login").hidden = true; document.body.classList.remove("lock"); $("status").textContent = "Yerel mod: Firebase bağlı değil"; store.local(); };
+$("lform").onsubmit = async e => {
+  e.preventDefault(); $("lerr").textContent = ""; $("lbtn").disabled = true;
+  try{ await fa.setPersistence(auth, $("lrem").checked ? fa.browserLocalPersistence : fa.browserSessionPersistence); const m = $("lmail").value.trim(), pw = $("lpass").value;
+    if(signup){
+      if(pw.length<8) throw {code:"short"};
+      if(pw!==$("lpass2").value) throw {code:"mismatch"};
+      await fa.createUserWithEmailAndPassword(auth, m, pw);
+    } else await fa.signInWithEmailAndPassword(auth, m, pw);
+    $("lpass").value = ""; $("lpass2").value = ""; }
+  catch(err){ $("lerr").textContent = authMsg(err.code); }
+  $("lbtn").disabled = false;
+};
+$("lreset").onclick = async () => {
+  const m = $("lmail").value.trim(); if(!m){ $("lerr").textContent = "Önce e-posta adresinizi yazın."; return; }
+  try{ await fa.sendPasswordResetEmail(auth, m); $("lerr").textContent = "Şifre sıfırlama bağlantısı e-postanıza gönderildi."; }
+  catch(err){ $("lerr").textContent = authMsg(err.code); }
+};
+/* Çıkışta oturumu ve cihazdaki çevrimdışı önbelleği temizle */
+async function leave(msg){
+  try{ await fa.signOut(auth); }catch{}
+  try{ store.unlisten(); await fs.terminate(db); await fs.clearIndexedDbPersistence(db); }catch{}
+  if(msg) sessionStorage.setItem("lmsg", msg); location.reload();
+}
+$("logout").onclick = () => { if(confirm("Çıkış yapılsın mı?")) leave(); };
+/* Hareketsizlikte otomatik kilit (dakika) */
+const IDLE_MIN = 60; let lastAct = Date.now();
+["touchstart","click","keydown","scroll"].forEach(ev => addEventListener(ev, () => lastAct = Date.now(), {passive:true}));
+const idleCheck = () => { if(auth?.currentUser && Date.now()-lastAct > IDLE_MIN*60000) leave("Güvenlik için oturum kapatıldı. Tekrar giriş yapın."); };
+setInterval(idleCheck, 30000);
+document.addEventListener("visibilitychange", () => { if(!document.hidden) idleCheck(); });
+store.init();
+</script>
+</body>
+</html>
